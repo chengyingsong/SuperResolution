@@ -42,15 +42,17 @@ def train():
                 mask = mask.to(device)
                 out = net(img)
 
-                loss = criteron(out + img, mask)
+                # 残差学习
+                # loss = criteron(out + img, mask)
+                loss = criteron(out, mask)
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
                 if i % 10 == 0:
                     pbar.set_description("loss:{}".format(loss))
                 epoch_loss += loss.item()
-            print("Epoch_loss:", epoch_loss / len(trainloader.dataset))
-            writer.add_scalar("SR_epoch_loss", epoch_loss / len(trainloader.dataset),
+            print("Epoch_loss:", epoch_loss)
+            writer.add_scalar("SR_epoch_loss", epoch_loss,
                               sum(e[0] for e in epoch_lr[:n]) + epoch)
 
             with torch.no_grad():
@@ -62,8 +64,8 @@ def train():
                     out = net(img)
                     loss = criteron(out + img, mask)
                     test_loss += loss.item()
-                print("Test_loss:", test_loss / len(testloader.dataset))
-                writer.add_scalar("SR_test_loss", test_loss / len(testloader),
+                print("Test_loss:", test_loss)
+                writer.add_scalar("SR_test_loss", test_loss,
                                   sum(e[0] for e in epoch_lr[:n]) + epoch)
 
                 if (test_loss < best_loss):
@@ -79,5 +81,5 @@ if __name__ == "__main__":
     device = "cuda"
     batch_size = 4
     sr_checkpoint = "checkpoint/ckpt.pt"
-    epoch_lr = [(100, 0.1)]
+    epoch_lr = [(20, 0.01)]
     train()

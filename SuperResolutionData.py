@@ -19,9 +19,10 @@ class SRData(Dataset):
 
     def __getitem__(self, index):
         # 将高清图片转换为YCbCr
-        high = (
-            Image.open(self.img_paths[index]).resize([256, 256]).convert("YCbCr")
-        )
+        # TODO: 从图片中随机crop出256*256的图像
+        img = Image.open(self.img_paths[index])
+        transform = transforms.RandomCrop(256, 256)
+        high = transform(img).convert("YCbCr")
         topil = ToPILImage()
         high_y, high_cb, high_cr = high.split()
 
@@ -37,7 +38,7 @@ class SRData(Dataset):
         if self.subset == "train":
             return self.transform(low_rgb), self.transform(high_rgb)
         else:
-            return low_rgb, high_rgb
+            return totensor(low_rgb), totensor(high_rgb)
         # if self.subset == "train":
         #     if self.demo:
         #         return (
